@@ -3,23 +3,50 @@ import styled from 'styled-components';
 import {Animated, TouchableOpacity, Dimensions, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MenuItem from '../MenuItem';
+import {connect} from 'react-redux';
 const screensHeight = Dimensions.get('window').height;
 
-export default class Menu extends React.Component {
+const mapStateToProps = state => {
+  return {
+    action: state.action,
+  };
+};
+
+const mapDispatchProps = dispatch => {
+  return {
+    closeMenu: () => {
+      dispatch({
+        type: 'CLOSE_MENU',
+      });
+    },
+  };
+};
+class Menu extends React.Component {
   state = {
     top: new Animated.Value(screensHeight),
   };
 
   toggleMenu = () => {
-    Animated.spring(this.state.top, {
-      toValue: screensHeight,
-    }).start();
+    if (this.props.action === 'openMenu') {
+      Animated.spring(this.state.top, {
+        toValue: 54,
+        useNativeDriver: false,
+      }).start();
+    }
+
+    if (this.props.action === 'closeMenu') {
+      Animated.spring(this.state.top, {
+        toValue: screensHeight,
+        useNativeDriver: false,
+      }).start();
+    }
   };
 
   componentDidMount() {
-    Animated.spring(this.state.top, {
-      toValue: 0,
-    }).start();
+    this.toggleMenu();
+  }
+  componentDidUpdate() {
+    this.toggleMenu();
   }
   render() {
     return (
@@ -29,7 +56,9 @@ export default class Menu extends React.Component {
           <Title>meng to</Title>
           <Subtitle>Designers at Designers+code</Subtitle>
         </Cover>
-        <TouchableOpacity onPress={this.toggleMenu} style={[styles.closeBtn]}>
+        <TouchableOpacity
+          onPress={this.props.closeMenu}
+          style={[styles.closeBtn]}>
           <CloseView>
             <Icon name="close" size={44} color="#546bfb" />
           </CloseView>
@@ -48,6 +77,8 @@ export default class Menu extends React.Component {
     );
   }
 }
+
+export default connect(mapStateToProps, mapDispatchProps)(Menu);
 
 const Image = styled.Image`
   position: absolute;
@@ -73,6 +104,8 @@ const Container = styled.View`
   width: 100%;
   height: 100%;
   z-index: 100;
+  border-radius: 10px;
+  overflow: hidden;
 `;
 
 const AnimatedContainer = Animated.createAnimatedComponent(Container);
